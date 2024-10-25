@@ -7,21 +7,21 @@ import { Card } from "../components/card";
 const socials = [
 	{
 		icon: <Twitter size={20} />,
-		href: "https://twitter.com/ambonxnobody_",
+		href: "https://twitter.com/hafiddna",
 		label: "Twitter",
-		handle: "@ambonxnobody_",
+		handle: "@hafiddna",
 	},
 	{
 		icon: <Instagram size={20} />,
-		href: "https://www.instagram.com/ambonxnobody/",
+		href: "https://www.instagram.com/hafiddna/",
 		label: "Instagram",
-		handle: "ambonxnobody",
+		handle: "hafiddna",
 	},
 	{
 		icon: <Github size={20} />,
-		href: "https://github.com/ambonxnobody",
+		href: "https://github.com/hafiddna",
 		label: "Github",
-		handle: "ambonxnobody",
+		handle: "hafiddna",
 	},
 ];
 

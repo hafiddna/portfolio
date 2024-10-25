@@ -64,7 +64,7 @@ export const Header: React.FC<Props> = ({ project, views }) => {
 								views,
 							)}
 						</span>
-						<Link target="_blank" href="https://twitter.com/ambonxnobody_">
+						<Link target="_blank" href="https://twitter.com/hafiddna">
 							<Twitter
 								className={`w-6 h-6 duration-200 hover:font-medium ${
 									isIntersecting
@@ -73,7 +73,7 @@ export const Header: React.FC<Props> = ({ project, views }) => {
 								} `}
 							/>
 						</Link>
-						<Link target="_blank" href="https://github.com/ambonxnobody">
+						<Link target="_blank" href="https://github.com/hafiddna">
 							<Github
 								className={`w-6 h-6 duration-200 hover:font-medium ${
 									isIntersecting

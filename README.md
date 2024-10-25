@@ -1,7 +1,7 @@
 <div align="center">
-    <a href="https://ambonxnobody.com"><h1 align="center">ambonxnobody.com</h1></a>
+    <a href="https://hafiddna.vercel.app"><h1 align="center">hafiddna.vercel.app</h1></a>
 
-My personal website, built with [Next.js](https://nextjs.org/), [Tailwind CSS](https://tailwindcss.com/), [Upstash](https://upstash.com?ref=ambonxnobody.com), [Contentlayer](https://www.contentlayer.dev/) and deployed to [Vercel](https://vercel.com/).
+My personal website, built with [Next.js](https://nextjs.org/), [Tailwind CSS](https://tailwindcss.com/), [Upstash](https://upstash.com?ref=hafiddna.vercel.app), [Contentlayer](https://www.contentlayer.dev/) and deployed to [Vercel](https://vercel.com/).
 
 </div>
 
@@ -14,12 +14,12 @@ My personal website, built with [Next.js](https://nextjs.org/), [Tailwind CSS](h
 
 
 ```sh-session
-git clone https://github.com/ambonxnobody/portfolio.git
+git clone https://github.com/hafiddna/portfolio.git
 cd portfolio
 ```
 
 
-Create a `.env` file similar to [`.env.example`](https://github.com/ambonxnobody/portfolio/blob/main/.env.example).
+Create a `.env` file similar to [`.env.example`](https://github.com/hafiddna/portfolio/blob/main/.env.example).
 
 Then install dependencies and run the development server:
 ```sh-session

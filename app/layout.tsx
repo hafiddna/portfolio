@@ -9,18 +9,18 @@ import { Analytics } from '@vercel/analytics/react';
 
 export const metadata: Metadata = {
   title: {
-    default: "ambonxnobody.com",
-    template: "%s | ambonxnobody.com",
+    default: "hafiddna.vercel.app",
+    template: "%s | hafiddna.vercel.app",
   },
   description: "Senior Web Developer of venturo.id and Freelancer",
   openGraph: {
-    title: "ambonxnobody.com",
+    title: "hafiddna.vercel.app",
     description: "Senior Web Developer of venturo.id and Freelancer",
-    url: "https://ambonxnobody.com",
-    siteName: "ambonxnobody.com",
+    url: "https://hafiddna.vercel.app",
+    siteName: "hafiddna.vercel.app",
     images: [
       {
-        url: "https://ambonxnobody.com/og.svg",
+        url: "https://hafiddna.vercel.app/og.svg",
         width: 1920,
         height: 1080,
       },
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     },
   },
   twitter: {
-    title: "AmbonxNobody",
+    title: "Hafid Dian Nurfaujan Ahat",
     card: "summary_large_image",
   },
   icons: {
