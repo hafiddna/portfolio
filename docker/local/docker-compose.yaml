@@ -1,0 +1,8 @@
+services:
+  portfolio:
+    build:
+      context: ../../
+      dockerfile: docker/local/Dockerfile
+    image: portfolio:latest
+    ports:
+      - "3000:3000"
