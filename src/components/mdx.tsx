@@ -171,7 +171,6 @@ interface MdxProps {
 }
 
 export function Mdx({ code }: MdxProps) {
-	console.log("code", code);
 	const Component = useMDXComponent(code);
 
 	return (

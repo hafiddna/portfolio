@@ -5,7 +5,6 @@ export interface PageStatistic {
     visitor?: Visitor[];
 }
 
-
 export interface Visitor {
     asn: {
         asn: string;
@@ -49,7 +48,7 @@ export interface Visitor {
     region_type: string;
     threat: {
         // TODO: Check this type
-        blocklist: string[];
+        blocklists: string[];
         is_anonymous: boolean;
         is_bogon: boolean;
         is_data_center: boolean;
