@@ -26,7 +26,7 @@ export default function LoginPage() {
     const [error, setError] = useState<string>('');
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const [signInWithEmailAndPassword, authenticatedUser] = useSignInWithEmailAndPassword(auth);
+    const [signInWithEmailAndPassword] = useSignInWithEmailAndPassword(auth);
     const [user, userLoading] = useAuthState(auth);
 
     const handleSearch = (value: string) => {
@@ -66,15 +66,6 @@ export default function LoginPage() {
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        if (authenticatedUser) {
-            authenticatedUser.user.getIdToken().then(() => {
-                // TODO: Need to be checked, because causing an error
-                redirect("/cms");
-            });
-        }
-    }, [authenticatedUser]);
 
     useEffect(() => {
         if (!userLoading) {
