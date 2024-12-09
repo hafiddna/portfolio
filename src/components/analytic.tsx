@@ -72,6 +72,8 @@ export default function Analytic({
     const pageStatisticQuery = query(pageStatisticRef, where("name", "==", page));
 
     function detectOS(): string {
+        if (typeof navigator === "undefined") return "Unknown OS";
+
         const platform = navigator.platform.toLowerCase();
 
         if (platform.includes("win")) return "Windows";
@@ -84,6 +86,8 @@ export default function Analytic({
     }
 
     function detectBrowser(): string {
+        if (typeof navigator === "undefined") return "Unknown Browser";
+
         const userAgent = navigator.userAgent;
 
         if (/chrome/i.test(userAgent)) return "Chrome";
@@ -96,6 +100,8 @@ export default function Analytic({
     }
 
     function getDeviceType(): DeviceType {
+        if (typeof window === "undefined") return "Unknown"; // Avoid execution on the server
+
         const userAgent = navigator.userAgent.toLowerCase();
         const width = window.innerWidth;
 
