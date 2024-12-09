@@ -1,15 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Card } from "@/components/card";
+import { db } from "@/lib/firebase";
+import { PageStatistic, Visitor } from "@/models/page-statistic";
 import { Select, DatePicker, Tabs, Tooltip as AntdTooltip } from 'antd';
 import type { SelectProps } from 'antd';
 import dayjs from "dayjs";
 import { collection, getDocs, query } from "firebase/firestore";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Card } from "@/components/card";
-import { db } from "@/lib/firebase";
 
 // TODO: Fix custom class attributes
 
@@ -71,7 +70,7 @@ export default function Dashboard() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const [pageStatistics, setPageStatistics] = useState<any[]>([]);
+    const [pageStatistics, setPageStatistics] = useState<PageStatistic[]>([]);
     const [firstLoading, setFirstLoading] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
@@ -81,11 +80,11 @@ export default function Dashboard() {
     const [periodFilter, setPeriodFilter] = useState<"Last 24 Hours" | "Last 7 Days" | "Last 30 Days" | "Last 3 Months" | "Last 12 Months" | "Last 24 Months">("Last 7 Days");
     const [fromFilter, setFromFilter] = useState(dayjs().subtract(7, 'day').unix());
     const [toFilter, setToFilter] = useState(dayjs().unix());
-    const [pageFilter, setPageFilter] = useState<any>();
-    const [countryFilter, setCountryFilter] = useState<any>();
-    const [deviceFilter, setDeviceFilter] = useState<any>();
-    const [browserFilter, setBrowserFilter] = useState<any>();
-    const [osFilter, setOsFilter] = useState<any>();
+    const [pageFilter, setPageFilter] = useState<null | string>(null);
+    const [countryFilter, setCountryFilter] = useState<null | string>(null);
+    const [deviceFilter, setDeviceFilter] = useState<null | string>(null);
+    const [browserFilter, setBrowserFilter] = useState<null | string>(null);
+    const [osFilter, setOsFilter] = useState<null | string>(null);
 
     const [visitor, setVisitor] = useState({count: 0, percentage: 0});
     const [visitorChart, setVisitorChart] = useState<any[]>([]);
@@ -295,22 +294,24 @@ export default function Dashboard() {
                 }
             }
 
-            pageStatistics.map((page: any) => {
-                page.visitor.map((visitor: any) => {
-                    if (visitor.date.seconds >= datesBeetween.now.start && visitor.date.seconds <= datesBeetween.now.end) {
-                        if (!nowIps.includes(visitor.ip)) {
-                            nowIps.push(visitor.ip);
-                        }
+            pageStatistics.map((page: PageStatistic) => {
+                if (page.visitor) {
+                    page.visitor.map((visitor: Visitor) => {
+                        if (visitor.date.seconds >= datesBeetween.now.start && visitor.date.seconds <= datesBeetween.now.end) {
+                            if (!nowIps.includes(visitor.ip)) {
+                                nowIps.push(visitor.ip);
+                            }
 
-                        nowPageViewCount++;
-                    } else if (visitor.date.seconds >= datesBeetween.last_quartal.start && visitor.date.seconds <= datesBeetween.last_quartal.end) {
-                        if (!lastQuartalIps.includes(visitor.ip)) {
-                            lastQuartalIps.push(visitor.ip);
-                        }
+                            nowPageViewCount++;
+                        } else if (visitor.date.seconds >= datesBeetween.last_quartal.start && visitor.date.seconds <= datesBeetween.last_quartal.end) {
+                            if (!lastQuartalIps.includes(visitor.ip)) {
+                                lastQuartalIps.push(visitor.ip);
+                            }
 
-                        lastQuartalPageViewCount++;
-                    }
-                });
+                            lastQuartalPageViewCount++;
+                        }
+                    });
+                }
             });
 
             setVisitor({count: nowIps.length, percentage: Math.round(((nowIps.length - (lastQuartalIps.length == 0 ? 1 : lastQuartalIps.length)) / (lastQuartalIps.length == 0 ? 1 : lastQuartalIps.length)) * 100)});

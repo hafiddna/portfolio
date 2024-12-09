@@ -5,7 +5,9 @@ import { ConfigProvider, theme } from 'antd';
 
 export default function CMSContainer({
     children
-}: {children: React.ReactNode}) {
+}: {
+    children: React.ReactNode
+}) {
     return (
         <AntdRegistry>
             <ConfigProvider

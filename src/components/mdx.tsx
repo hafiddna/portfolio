@@ -1,9 +1,6 @@
-// TODO: Resolve any type
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-// TODO: Resolve unknown module
 import { useMDXComponent } from "next-contentlayer/hooks";
 
 function clsx(...args: any) {
@@ -107,7 +104,6 @@ const components = {
 		alt,
 		...props
 	}: React.ImgHTMLAttributes<HTMLImageElement>) => (
-		// eslint-disable-next-line @next/next/no-img-element
 		<img
 			className={clsx("rounded-md border border-zinc-200", className)}
 			alt={alt}

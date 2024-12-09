@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -134,14 +132,13 @@ export default function CMSContact() {
             setLoading(true);
             try {
                 const querySnapshot = await getDocs(collection(db, "contacts"));
-                const users = querySnapshot.docs.map((doc) => ({
+                const users: Contact[] = querySnapshot.docs.map((doc) => ({
                     id: doc.id,
                     ...doc.data(),
                 }));
 
                 const newSocials: Contact[] = [];
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                users.forEach((user: any) => {
+                users.forEach((user: Contact) => {
                     const newData = user;
                     if (user.icon === "x") {
                         newData.icon = <FaXTwitter size={20} />;

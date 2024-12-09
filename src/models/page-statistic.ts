@@ -6,7 +6,7 @@ export interface PageStatistic {
 }
 
 
-interface Visitor {
+export interface Visitor {
     asn: {
         asn: string;
         domain: null | string;

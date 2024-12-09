@@ -70,6 +70,7 @@ export default function LoginPage() {
     useEffect(() => {
         if (authenticatedUser) {
             authenticatedUser.user.getIdToken().then(() => {
+                // TODO: Need to be checked, because causing an error
                 redirect("/cms");
             });
         }
@@ -128,6 +129,7 @@ export default function LoginPage() {
                         </label>
                         <div className="relative">
                             <input
+                                autoComplete="current-password"
                                 aria-autocomplete="list"
                                 className={`bg-transparent mt-1 block w-full appearance-none rounded-md border text-sm px-3 py-2 placeholder-zinc-400 text-white shadow-sm focus:border-white focus:outline-none focus:ring-white sm:text-sm duration-150 ${!errors.password ? 'border-zinc-600 hover:border-zinc-400/50' : 'border-red-500'}`}
                                 id="password"
