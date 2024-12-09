@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card } from "@/components/card";
 import { db } from "@/lib/firebase";
 import { Contact } from "@/models/contact";
-import { Button, Modal } from "antd";
+import { Button, Modal, Dropdown } from "antd";
 import { collection, getDocs, query, where, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { BiLogoDevTo } from "react-icons/bi";
 import { FaMediumM } from "react-icons/fa";
@@ -34,91 +34,98 @@ const SkeletonCard = () => (
     </Card>
 );
 
+interface SocialOption {
+    icon: JSX.Element;
+    label: string;
+}
+
+const socials: SocialOption[] = [
+    {
+        icon: <FaXTwitter size={20} />,
+        label: "X",
+    },
+    {
+        icon: <FaInstagram size={20} />,
+        label: "Instagram",
+    },
+    {
+        icon: <FaGithub size={20} />,
+        label: "GitHub",
+    },
+    {
+        icon: <FaLinkedin size={20} />,
+        label: "LinkedIn",
+    },
+    {
+        icon: <FaFacebook size={20} />,
+        label: "Facebook",
+    },
+    {
+        icon: <FaHashnode size={20} />,
+        label: "Hashnode",
+    },
+    {
+        icon: <FaStackOverflow size={20} />,
+        label: "Stack Overflow",
+    },
+    {
+        icon: <FaCodepen size={20} />,
+        label: "CodePen",
+    },
+    {
+        icon: <FaHackerrank size={20} />,
+        label: "HackerRank",
+    },
+    {
+        icon: <FaYoutube size={20} />,
+        label: "YouTube",
+    },
+    {
+        icon: <FaTwitch size={20} />,
+        label: "Twitch",
+    },
+    {
+        icon: <BiLogoDevTo size={20} />,
+        label: "Dev.to",
+    },
+    {
+        icon: <FaMediumM size={20} />,
+        label: "Medium",
+    },
+    {
+        icon: <SiCodesandbox size={20} />,
+        label: "CodeSandbox",
+    },
+    {
+        icon: <FaThreads size={20} />,
+        label: "Threads",
+    },
+    {
+        icon: <FaSquareBehance size={20} />,
+        label: "Behance",
+    },
+    {
+        icon: <FaDribbble size={20} />,
+        label: "Dribbble",
+    },
+    {
+        icon: <SiLeetcode size={20} />,
+        label: "LeetCode",
+    },
+    {
+        icon: <SiCodewars size={20} />,
+        label: "CodeWars",
+    },
+    {
+        icon: <SiTopcoder size={20} />,
+        label: "TopCoder",
+    },
+];
+
 export default function CMSContact() {
     const [data, setData] = useState<Contact[]>([]);
     const [loading, setLoading] = useState(false);
-    const [socialData, setSocialData] = useState([
-        {
-            icon: <FaXTwitter size={20} />,
-            label: "X",
-        },
-        {
-            icon: <FaInstagram size={20} />,
-            label: "Instagram",
-        },
-        {
-            icon: <FaGithub size={20} />,
-            label: "GitHub",
-        },
-        {
-            icon: <FaLinkedin size={20} />,
-            label: "LinkedIn",
-        },
-        {
-            icon: <FaFacebook size={20} />,
-            label: "Facebook",
-        },
-        {
-            icon: <FaHashnode size={20} />,
-            label: "Hashnode",
-        },
-        {
-            icon: <FaStackOverflow size={20} />,
-            label: "Stack Overflow",
-        },
-        {
-            icon: <FaCodepen size={20} />,
-            label: "CodePen",
-        },
-        {
-            icon: <FaHackerrank size={20} />,
-            label: "HackerRank",
-        },
-        {
-            icon: <FaYoutube size={20} />,
-            label: "YouTube",
-        },
-        {
-            icon: <FaTwitch size={20} />,
-            label: "Twitch",
-        },
-        {
-            icon: <BiLogoDevTo size={20} />,
-            label: "Dev.to",
-        },
-        {
-            icon: <FaMediumM size={20} />,
-            label: "Medium",
-        },
-        {
-            icon: <SiCodesandbox size={20} />,
-            label: "CodeSandbox",
-        },
-        {
-            icon: <FaThreads size={20} />,
-            label: "Threads",
-        },
-        {
-            icon: <FaSquareBehance size={20} />,
-            label: "Behance",
-        },
-        {
-            icon: <FaDribbble size={20} />,
-            label: "Dribbble",
-        },
-        {
-            icon: <SiLeetcode size={20} />,
-            label: "LeetCode",
-        },
-        {
-            icon: <SiCodewars size={20} />,
-            label: "CodeWars",
-        },
-        {
-            icon: <SiTopcoder size={20} />,
-            label: "TopCoder",
-        },
-    ]);
+    const [socialData, setSocialData] = useState<SocialOption[]>();
 
     const [modalVisible, setModalVisible] = useState<"" | "add" | "edit">("");
 
@@ -132,58 +139,58 @@ export default function CMSContact() {
             setLoading(true);
             try {
                 const querySnapshot = await getDocs(collection(db, "contacts"));
-                const users: Contact[] = querySnapshot.docs.map((doc) => ({
+                const contacts: Contact[] = querySnapshot.docs.map((doc) => ({
                     id: doc.id,
                     ...doc.data(),
                 }));
 
                 const newSocials: Contact[] = [];
-                users.forEach((user: Contact) => {
-                    const newData = user;
-                    if (user.icon === "x") {
+                contacts.forEach((contact: Contact) => {
+                    const newData = contact;
+                    if (contact.icon === "x") {
                         newData.icon = <FaXTwitter size={20} />;
-                    } else if (user.icon === "instagram") {
+                    } else if (contact.icon === "instagram") {
                         newData.icon = <FaInstagram size={20} />;
-                    } else if (user.icon === "github") {
+                    } else if (contact.icon === "github") {
                         newData.icon = <FaGithub size={20} />;
-                    } else if (user.icon === "linkedin") {
+                    } else if (contact.icon === "linkedin") {
                         newData.icon = <FaLinkedin size={20} />;
-                    } else if (user.icon === "facebook") {
+                    } else if (contact.icon === "facebook") {
                         newData.icon = <FaFacebook size={20} />;
-                    } else if (user.icon === "hashnode") {
+                    } else if (contact.icon === "hashnode") {
                         newData.icon = <FaHashnode size={20} />;
-                    } else if (user.icon === "stackoverflow") {
+                    } else if (contact.icon === "stackoverflow") {
                         newData.icon = <FaStackOverflow size={20} />;
-                    } else if (user.icon === "codepen") {
+                    } else if (contact.icon === "codepen") {
                         newData.icon = <FaCodepen size={20} />;
-                    } else if (user.icon === "hackerrank") {
+                    } else if (contact.icon === "hackerrank") {
                         newData.icon = <FaHackerrank size={20} />;
-                    } else if (user.icon === "youtube") {
+                    } else if (contact.icon === "youtube") {
                         newData.icon = <FaYoutube size={20} />;
-                    } else if (user.icon === "twitch") {
+                    } else if (contact.icon === "twitch") {
                         newData.icon = <FaTwitch size={20} />;
-                    } else if (user.icon === "devto") {
+                    } else if (contact.icon === "devto") {
                         newData.icon = <BiLogoDevTo size={20} />;
-                    } else if (user.icon === "medium") {
+                    } else if (contact.icon === "medium") {
                         newData.icon = <FaMediumM size={20} />;
-                    } else if (user.icon === "codesandbox") {
+                    } else if (contact.icon === "codesandbox") {
                         newData.icon = <SiCodesandbox size={20} />;
-                    } else if (user.icon === "threads") {
+                    } else if (contact.icon === "threads") {
                         newData.icon = <FaThreads size={20} />;
-                    } else if (user.icon === "behance") {
+                    } else if (contact.icon === "behance") {
                         newData.icon = <FaSquareBehance size={20} />;
-                    } else if (user.icon === "dribbble") {
+                    } else if (contact.icon === "dribbble") {
                         newData.icon = <FaDribbble size={20} />;
-                    } else if (user.icon === "leetcode") {
+                    } else if (contact.icon === "leetcode") {
                         newData.icon = <SiLeetcode size={20} />;
-                    } else if (user.icon === "codewars") {
+                    } else if (contact.icon === "codewars") {
                         newData.icon = <SiCodewars size={20} />;
-                    } else if (user.icon === "topcoder") {
+                    } else if (contact.icon === "topcoder") {
                         newData.icon = <SiTopcoder size={20} />;
                     }
                     newSocials.push(newData as Contact);
                 });
-                setSocialData(newSocials.filter((s) => socialData.some((sd) => sd.label === s.label)));
+                setSocialData(socials.filter((s) => !newSocials.find((n) => n.label === s.label)));
                 setData(newSocials);
             } catch (error) {
                 console.error("Error fetching data: ", error);

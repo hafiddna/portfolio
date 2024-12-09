@@ -182,8 +182,8 @@ export default function Dashboard() {
             };
 
             const dates: any[] = [];
-            const nowIps: any[] = [];
-            const lastQuartalIps: any[] = [];
+            const nowIps: string[] = [];
+            const lastQuartalIps: string[] = [];
             let nowPageViewCount = 0;
             let lastQuartalPageViewCount = 0;
 
@@ -325,8 +325,10 @@ export default function Dashboard() {
         <Tabs
             tabBarStyle={{ backgroundColor: "#111111" }}
             activeKey={typeFilter}
-            onTabClick={(key: any) => {
-                setTypeFilter(key);
+            onTabClick={(key: string) => {
+                if (key == "visitors" || key == "page_views") {
+                    setTypeFilter(key);
+                }
             }}
             defaultActiveKey="visitors"
             size="large"
