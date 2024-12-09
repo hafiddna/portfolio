@@ -1,7 +1,7 @@
 "use client";
-import { FaArrowLeft } from "react-icons/fa6";
-import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { FaArrowLeft } from "react-icons/fa6";
 
 export const Navigation: React.FC = () => {
     const ref = useRef<HTMLElement>(null);

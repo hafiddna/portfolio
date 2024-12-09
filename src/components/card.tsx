@@ -1,7 +1,6 @@
 "use client";
-import { motion, useMotionTemplate, useSpring } from "framer-motion";
-
 import React, { PropsWithChildren, ReactNode } from "react";
+import { motion, useMotionTemplate, useSpring } from "framer-motion";
 
 export const Card: React.FC<PropsWithChildren> = ({ children, disableAnimation = false, borderless = false } : { children?: ReactNode; disableAnimation?: boolean; borderless?: boolean }) => {
     const mouseX = useSpring(0, { stiffness: 500, damping: 100 });

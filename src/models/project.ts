@@ -13,11 +13,11 @@ export interface Project {
         status: string;
         tags: string[];
         views: number;
-        source: source[];
+        source: Source[];
     };
 }
 
-interface source {
+export interface Source {
     label: string;
     url: string;
 }

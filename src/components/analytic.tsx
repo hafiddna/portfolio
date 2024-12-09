@@ -1,8 +1,8 @@
 "use client";
 import { GetServerSideProps } from "next";
 import { db } from "@/lib/firebase";
+import { PageStatistic } from "@/models/page-statistic";
 import { collection, getDocs, query, where, updateDoc, doc, addDoc } from "firebase/firestore";
-import {PageStatistic} from "@/models/page-statistic";
 
 type DeviceType = "Desktop" | "Mobile" | "Tablet" | "Unknown";
 
