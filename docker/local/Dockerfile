@@ -5,6 +5,7 @@ RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
+# TODO: Update Dockerfile into using npm instead pnpm
 COPY package.json pnpm-lock.yaml* ./
 RUN \
   if [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i; \
