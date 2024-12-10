@@ -1,14 +1,12 @@
 "use client";
-import React, { PropsWithChildren, ReactNode } from "react";
+import React, { ReactNode } from "react";
 import { motion, useMotionTemplate, useSpring } from "framer-motion";
 
-export const Card: React.FC<PropsWithChildren> = ({ children, disableAnimation = false, borderless = false } : { children?: ReactNode; disableAnimation?: boolean; borderless?: boolean }) => {
+export const Card = ({ children, disableAnimation = false, borderless = false } : { children?: ReactNode; disableAnimation?: boolean; borderless?: boolean }) => {
     const mouseX = useSpring(0, { stiffness: 500, damping: 100 });
     const mouseY = useSpring(0, { stiffness: 500, damping: 100 });
 
-    // TODO: Resolve any type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function onMouseMove({ currentTarget, clientX, clientY }: any) {
+    function onMouseMove({ currentTarget, clientX, clientY }: { currentTarget: HTMLDivElement; clientX: number; clientY: number; }) {
         const { left, top } = currentTarget.getBoundingClientRect();
         mouseX.set(clientX - left);
         mouseY.set(clientY - top);

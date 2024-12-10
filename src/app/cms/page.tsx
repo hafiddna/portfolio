@@ -4,17 +4,33 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/card";
 import { db } from "@/lib/firebase";
 import { PageStatistic, Visitor } from "@/models/page-statistic";
-import { Select, DatePicker, Tabs, Tooltip as AntdTooltip } from 'antd';
-import type { SelectProps } from 'antd';
+import { Select, DatePicker, Tabs, Tooltip as AntdTooltip, Statistic, Radio } from 'antd';
+import type { SelectProps, StatisticProps } from 'antd';
 import dayjs from "dayjs";
 import { collection, getDocs, query } from "firebase/firestore";
+import CountUp from 'react-countup';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+const formatter: StatisticProps['formatter'] = (value) => (
+    <CountUp end={value as number} separator="," />
+);
 
 // TODO: Fix custom class attributes
 
 const { RangePicker } = DatePicker;
 
-const data = [
+interface ChartData {
+    date: string;
+    value: number | null;
+    dashed_value: number | null;
+}
+
+interface DatesFilter {
+    start: number;
+    end: number;
+}
+
+const data: ChartData[] = [
     {
         date: 'Nov 27',
         value: 6,
@@ -87,12 +103,13 @@ export default function Dashboard() {
     const [osFilter, setOsFilter] = useState<null | string>(null);
 
     const [visitor, setVisitor] = useState({count: 0, percentage: 0});
-    const [visitorChart, setVisitorChart] = useState<any[]>([]);
+    const [visitorChart, setVisitorChart] = useState<ChartData[]>([]);
     const [pageView, setPageView] = useState({count: 0, percentage: 0});
-    const [pageViewChart, setPageViewChart] = useState<any[]>([]);
+    const [pageViewChart, setPageViewChart] = useState<ChartData[]>([]);
 
     const [pagesView, setPagesView] = useState({visitors: [{name: "", count: 0}], page_views: [{name: "", count: 0}]});
     const [countriesView, setCountriesView] = useState({visitors: [{emoji: "", country: "", percentage: 0}], page_views: [{emoji: "", country: "", percentage: 0}]});
+    const [devicesTab, setDevicesTab] = useState<"devices" | "browsers">("devices");
     const [devicesView, setDevicesView] = useState({visitors: [{name: "", percentage: 0}], page_views: [{name: "", percentage: 0}]});
     const [browserView, setBrowserView] = useState({visitors: [{name: "", percentage: 0}], page_views: [{name: "", percentage: 0}]});
     const [osView, setOsView] = useState({visitors: [{name: "", percentage: 0}], page_views: [{name: "", percentage: 0}]});
@@ -168,6 +185,8 @@ export default function Dashboard() {
     }, []);
 
     useEffect(() => {
+        setLoading(true);
+
         // TODO: Audit filter logics
         if (!firstLoading && !error && pageStatistics.length > 0) {
             let datesBeetween = {
@@ -181,14 +200,14 @@ export default function Dashboard() {
                 }
             };
 
-            const dates: any[] = [];
+            const dates: DatesFilter[] = [];
             const nowIps: string[] = [];
             const lastQuartalIps: string[] = [];
             let nowPageViewCount = 0;
             let lastQuartalPageViewCount = 0;
 
-            const newVisitorChart: any[] = data;
-            const newPageViewChart: any[] = data;
+            const newVisitorChart: ChartData[] = data;
+            const newPageViewChart: ChartData[] = data;
 
             if (periodTypeFilter == "period") {
                 if (periodFilter == "Last 24 Hours") {
@@ -319,6 +338,8 @@ export default function Dashboard() {
             setPageView({count: nowPageViewCount, percentage: Math.round(((nowPageViewCount - (lastQuartalPageViewCount == 0 ? 1 : lastQuartalPageViewCount)) / (lastQuartalPageViewCount == 0 ? 1 : lastQuartalPageViewCount)) * 100)});
             setPageViewChart(newPageViewChart);
         }
+
+        setLoading(false);
     }, [pageStatistics, firstLoading, error, periodTypeFilter, periodFilter, fromFilter, toFilter, pageFilter, countryFilter, deviceFilter, browserFilter, osFilter]);
 
     const tabs = (
@@ -332,7 +353,7 @@ export default function Dashboard() {
             }}
             defaultActiveKey="visitors"
             size="large"
-            items={["Visitors", "Page Views"].map((name, _) => {
+            items={["Visitors", "Page Views"].map((name) => {
                 const key = name.toLowerCase().replace(/\s/g, "_");
                 const count = key == "visitors" ? visitor.count : pageView.count;
                 const percentage = key == "visitors" ? visitor.percentage : pageView.percentage;
@@ -344,8 +365,7 @@ export default function Dashboard() {
                             {!firstLoading ? (
                                 <div className="flex items-center gap-4">
                                     <p className="text-[32px] text-[#EDEDED] font-semibold">
-                                        {/*TODO: Add counting animation*/}
-                                        {count}
+                                        <Statistic value={count} formatter={formatter} />
                                     </p>
                                     <AntdTooltip title={`100% more visitors than the previous 7 days`}>
                                         <div className={`min-w-[46px] p-1.5 rounded-[5px] flex justify-center items-center text-xs font-medium ${percentage > 0 ? "text-[#0CCE6B] bg-[#5ECB7533]" : percentage == 0 ? "text-[#666666] bg-[#333333]" : "text-[#FF0000] bg-[#FF595933]"}`}>
@@ -361,7 +381,7 @@ export default function Dashboard() {
                     key: key,
                     children: (
                         !firstLoading ? (
-                            <div className="h-[400px] w-full">
+                            <div className="relative h-[400px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart
                                         width={500}
@@ -419,7 +439,7 @@ export default function Dashboard() {
                                             dataKey="value"
                                             stroke="#0072F5"
                                             fill="#051125"
-                                            activeDot={({ cx, cy, payload, value }) => {
+                                            activeDot={({ cx, cy, payload }) => {
                                                 if (payload.value) {
                                                     return (
                                                         <circle cx={cx} cy={cy} r={4} fill="#0072F5"/>
@@ -435,7 +455,7 @@ export default function Dashboard() {
                                             stroke="#0072F5"
                                             strokeDasharray={"5 5"}
                                             fill="#051125"
-                                            activeDot={({ cx, cy, payload, value }) => {
+                                            activeDot={({ cx, cy, payload }) => {
                                                 if (payload.dashed_value) {
                                                     return (
                                                         <circle cx={cx} cy={cy} r={4} fill="#0072F5"/>
@@ -479,6 +499,7 @@ export default function Dashboard() {
                             size="large"
                             style={{ width: 300 }}
                             onChange={(e, d) => {
+                                console.log(e, d);
                                 const currentSearchParams = new URLSearchParams(searchParams.toString());
 
                                 setPeriodTypeFilter("from-to");
@@ -499,9 +520,9 @@ export default function Dashboard() {
                             size="large"
                             value={periodFilter}
                             defaultValue="Last 7 Days"
-                            onChange={(e: any) => {
+                            onChange={(e: string) => {
                                 setPeriodTypeFilter("period");
-                                setPeriodFilter(e)
+                                setPeriodFilter(e as "Last 24 Hours" | "Last 7 Days" | "Last 30 Days" | "Last 3 Months" | "Last 12 Months" | "Last 24 Months")
 
                                 const currentSearchParams = new URLSearchParams(searchParams.toString());
 
@@ -540,14 +561,12 @@ export default function Dashboard() {
             <div className="grid grid-cols-12 gap-4 sm:-mt-16 max-w-7xl mx-auto">
                 <div className="col-span-12 w-full sm:px-6 lg:px-8">
                     <div className="hidden sm:block">
-                        {/*@ts-expect-error just ignoring error linter*/}
                         <Card disableAnimation>
                             {tabs}
                         </Card>
                     </div>
 
                     <div className="sm:hidden border-y border-zinc-600 mt-4">
-                        {/*@ts-expect-error just ignoring error linter*/}
                         <Card disableAnimation borderless>
                             {tabs}
                         </Card>
@@ -556,7 +575,6 @@ export default function Dashboard() {
 
                 <div className="col-span-12 grid grid-cols-12 px-6 lg:px-8 gap-4">
                     <div className="col-span-12 lg:col-span-6 w-full">
-                        {/*@ts-expect-error just ignoring error linter*/}
                         <Card disableAnimation={true}>
                             <div className="p-5 flex justify-between items-center border-b border-zinc-800">
                                 <div className="font-medium text-sm text-[#EDEDED]">Pages</div>
@@ -567,7 +585,6 @@ export default function Dashboard() {
                     </div>
 
                     <div className="col-span-12 lg:col-span-6 w-full">
-                        {/*@ts-expect-error just ignoring error linter*/}
                         <Card disableAnimation={true}>
                             <div className="p-5 flex justify-between items-center border-b border-zinc-800">
                                 <div className="font-medium text-sm text-[#EDEDED]">Countries</div>
@@ -578,10 +595,19 @@ export default function Dashboard() {
                     </div>
 
                     <div className="col-span-12 lg:col-span-6 w-full">
-                        {/*@ts-expect-error just ignoring error linter*/}
                         <Card disableAnimation={true}>
                             <div className="p-5 flex justify-between items-center border-b border-zinc-800">
-                                <div className="font-medium text-sm text-[#EDEDED]">TODO: Should be radio button between Devices and Browsers</div>
+                                <div className="font-medium text-sm text-[#EDEDED]">
+                                    <Radio.Group defaultValue="devices" value={devicesTab} onChange={(e) => {
+                                        if (e.target.value == "devices" || e.target.value == "browsers") {
+                                            console.log(e.target.value)
+                                            setDevicesTab(e.target.value)
+                                        }
+                                    }}>
+                                        <Radio.Button value="devices">Devices</Radio.Button>
+                                        <Radio.Button value="browsers">Browsers</Radio.Button>
+                                    </Radio.Group>
+                                </div>
                                 <div className="text-xs text-[#A1A1A1] uppercase">{typeFilter.replace("_", " ")}</div>
                             </div>
                             <div className="flex flex-col my-2"></div>
@@ -589,7 +615,6 @@ export default function Dashboard() {
                     </div>
 
                     <div className="col-span-12 lg:col-span-6 w-full">
-                        {/*@ts-expect-error just ignoring error linter*/}
                         <Card disableAnimation={true}>
                             <div className="p-5 flex justify-between items-center border-b border-zinc-800">
                                 <div className="font-medium text-sm text-[#EDEDED]">Operating Systems</div>
