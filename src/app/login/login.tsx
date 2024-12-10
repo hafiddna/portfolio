@@ -86,7 +86,6 @@ export default function LoginPage() {
                     {error && <p className="text-red-500 text-xs text-center">{error}</p>}
 
                     <div>
-                        {/*htmlFor="email"*/}
                         <label className="block text-xs leading-8 text-zinc-400 group-hover:text-zinc-300 uppercase">
                             Email Address
 
@@ -96,7 +95,10 @@ export default function LoginPage() {
                                 options={options}
                                 onChange={(e) => {
                                     setError('');
-                                    setErrors({});
+                                    setErrors({
+                                        ...errors,
+                                        email: '',
+                                    });
                                     setFormData({...formData, email: e});
                                 }}
                                 value={formData.email}
@@ -111,7 +113,7 @@ export default function LoginPage() {
                             </AutoComplete>
                         </label>
 
-                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                        {errors.email !== '' && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                     </div>
 
                     <div>
@@ -130,7 +132,10 @@ export default function LoginPage() {
                                 value={formData.password}
                                 onChange={(e) => {
                                     setError('');
-                                    setErrors({});
+                                    setErrors({
+                                        ...errors,
+                                        password: '',
+                                    });
                                     setFormData({...formData, password: e.target.value});
                                 }}
                             />
@@ -143,7 +148,7 @@ export default function LoginPage() {
                                 {showPassword ? <FaEyeSlash className="text-zinc-400 hover:text-zinc-300 duration-200" /> : <FaEye className="text-zinc-400 hover:text-zinc-300 duration-200" />}
                             </button>
                         </div>
-                        {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                        {errors.password !== '' && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                     </div>
 
                     <button

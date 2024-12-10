@@ -5,18 +5,19 @@ import { Card } from "@/components/card";
 import { db } from "@/lib/firebase";
 import { Contact } from "@/models/contact";
 import { Button, Modal, Dropdown } from "antd";
-import { collection, getDocs, query, where, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import type { MenuProps } from 'antd';
+import { collection, getDocs, query, where, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { BiLogoDevTo } from "react-icons/bi";
 import { FaMediumM } from "react-icons/fa";
-import { FaGithub, FaXTwitter, FaInstagram, FaLinkedin, FaFacebook, FaHashnode, FaStackOverflow, FaCodepen, FaHackerrank, FaYoutube, FaTwitch, FaThreads, FaSquareBehance, FaDribbble } from "react-icons/fa6";
+import { FaPlus, FaGithub, FaXTwitter, FaInstagram, FaLinkedin, FaFacebook, FaHashnode, FaStackOverflow, FaCodepen, FaHackerrank, FaYoutube, FaTwitch, FaThreads, FaSquareBehance, FaDribbble } from "react-icons/fa6";
 import { SiCodesandbox, SiLeetcode, SiCodewars, SiTopcoder } from "react-icons/si";
 import { z } from "zod";
 
 const schema = z.object({
-    label: z.string(),
-    icon: z.any(),
-    handle: z.string().min(1, "Handle must be at least 1 character"),
-    href: z.string().url("Href field must be a valid URL"),
+    label: z.string().min(1, "Label must be at least 1 character"),
+    icon: z.string().min(1, "Icon must be at least 1 character"),
+    handle: z.string().min(1, "Title must be at least 1 character"),
+    href: z.string().url("URL field must be a valid URL"),
 })
 
 type RegisterFormData = z.infer<typeof schema>;
@@ -36,88 +37,109 @@ const SkeletonCard = () => (
 
 interface SocialOption {
     icon: JSX.Element;
+    icon_title: JSX.Element;
     label: string;
 }
 
 const socials: SocialOption[] = [
     {
-        icon: <FaXTwitter size={20} />,
+        icon: <FaXTwitter size={14} />,
+        icon_title: <FaXTwitter size={20} />,
         label: "X",
     },
     {
-        icon: <FaInstagram size={20} />,
+        icon: <FaInstagram size={14} />,
+        icon_title: <FaInstagram size={20} />,
         label: "Instagram",
     },
     {
-        icon: <FaGithub size={20} />,
+        icon: <FaGithub size={14} />,
+        icon_title: <FaGithub size={20} />,
         label: "GitHub",
     },
     {
-        icon: <FaLinkedin size={20} />,
+        icon: <FaLinkedin size={14} />,
+        icon_title: <FaLinkedin size={20} />,
         label: "LinkedIn",
     },
     {
-        icon: <FaFacebook size={20} />,
+        icon: <FaFacebook size={14} />,
+        icon_title: <FaFacebook size={20} />,
         label: "Facebook",
     },
     {
-        icon: <FaHashnode size={20} />,
+        icon: <FaHashnode size={14} />,
+        icon_title: <FaHashnode size={20} />,
         label: "Hashnode",
     },
     {
-        icon: <FaStackOverflow size={20} />,
+        icon: <FaStackOverflow size={14} />,
+        icon_title: <FaStackOverflow size={20} />,
         label: "Stack Overflow",
     },
     {
-        icon: <FaCodepen size={20} />,
+        icon: <FaCodepen size={14} />,
+        icon_title: <FaCodepen size={20} />,
         label: "CodePen",
     },
     {
-        icon: <FaHackerrank size={20} />,
+        icon: <FaHackerrank size={14} />,
+        icon_title: <FaHackerrank size={20} />,
         label: "HackerRank",
     },
     {
-        icon: <FaYoutube size={20} />,
+        icon: <FaYoutube size={14} />,
+        icon_title: <FaYoutube size={20} />,
         label: "YouTube",
     },
     {
-        icon: <FaTwitch size={20} />,
+        icon: <FaTwitch size={14} />,
+        icon_title: <FaTwitch size={20} />,
         label: "Twitch",
     },
     {
-        icon: <BiLogoDevTo size={20} />,
+        icon: <BiLogoDevTo size={14} />,
+        icon_title: <BiLogoDevTo size={20} />,
         label: "Dev.to",
     },
     {
-        icon: <FaMediumM size={20} />,
+        icon: <FaMediumM size={14} />,
+        icon_title: <FaMediumM size={20} />,
         label: "Medium",
     },
     {
-        icon: <SiCodesandbox size={20} />,
+        icon: <SiCodesandbox size={14} />,
+        icon_title: <SiCodesandbox size={20} />,
         label: "CodeSandbox",
     },
     {
-        icon: <FaThreads size={20} />,
+        icon: <FaThreads size={14} />,
+        icon_title: <FaThreads size={20} />,
         label: "Threads",
     },
     {
-        icon: <FaSquareBehance size={20} />,
+        icon: <FaSquareBehance size={14} />,
+        icon_title: <FaSquareBehance size={20} />,
         label: "Behance",
     },
     {
-        icon: <FaDribbble size={20} />,
+        icon: <FaDribbble size={14} />,
+        icon_title: <FaDribbble size={20} />,
         label: "Dribbble",
     },
     {
-        icon: <SiLeetcode size={20} />,
+        icon: <SiLeetcode size={14} />,
+        icon_title: <SiLeetcode size={20} />,
         label: "LeetCode",
     },
     {
-        icon: <SiCodewars size={20} />,
+        icon: <SiCodewars size={14} />,
+        icon_title: <SiCodewars size={20} />,
         label: "CodeWars",
     },
     {
-        icon: <SiTopcoder size={20} />,
+        icon: <SiTopcoder size={14} />,
+        icon_title: <SiTopcoder size={20} />,
         label: "TopCoder",
     },
 ];
@@ -125,10 +147,10 @@ const socials: SocialOption[] = [
 export default function CMSContact() {
     const [data, setData] = useState<Contact[]>([]);
     const [loading, setLoading] = useState(false);
-    const [socialData, setSocialData] = useState<SocialOption[]>();
+    const [socialData, setSocialData] = useState<SocialOption[]>(socials);
 
     const [modalVisible, setModalVisible] = useState<"" | "add" | "edit">("");
-
+    const [modalTitle, setModalTitle] = useState<JSX.Element>(<></>);
     const [formData, setFormData] = useState<RegisterFormData>({handle: '', href: '', icon: '', label: ''});
     const [formLoading, setFormLoading] = useState(false);
     const [error, setError] = useState<string>('');
@@ -203,6 +225,71 @@ export default function CMSContact() {
         fetchData().then(() => {});
     }, []);
 
+    const onDropdownClick: MenuProps['onClick'] = ({ key }) => {
+        const selected = socials.find((s) => s.label === key);
+        if (selected) {
+            setFormData({
+                handle: '',
+                href: '',
+                icon: '',
+                label: selected.label,
+            });
+            setModalVisible("add");
+            setModalTitle(
+                <div className="flex items-center gap-2">
+                    {selected.icon_title}
+                    <span>{selected.label}</span>
+                </div>
+            )
+        }
+    };
+
+    const submitForm = async () => {
+        setFormLoading(true);
+        setFormData({
+            ...formData,
+            icon: formData.label
+        });
+
+        try {
+            schema.parse(formData);
+
+            if (modalVisible === "add") {
+                const docRef = await addDoc(collection(db, "contacts"), formData);
+                setData([...data, {...formData, id: docRef.id}]);
+            } else if (modalVisible === "edit") {
+                const contactRef = collection(db, "contacts");
+                const contactQuery = query(contactRef, where("label", "==", formData.label));
+                const contactSnapshot = await getDocs(contactQuery);
+                const contactDoc = contactSnapshot.docs[0];
+                await updateDoc(doc(db, "contacts", contactDoc.id), formData);
+                const updatedData = data.map((d) => d.id === contactDoc.id ? {...formData, id: contactDoc.id} : d);
+                setData(updatedData);
+            }
+
+            resetForm();
+        } catch (error: unknown) {
+            if (error instanceof z.ZodError) {
+                const fieldErrors: Record<string, string> = {};
+                error.errors.forEach((err) => {
+                    if (err.path[0]) fieldErrors[err.path[0].toString()] = err.message;
+                });
+                setErrors(fieldErrors);
+            } else {
+                setError("Failed to save data.");
+            }
+            setFormLoading(false);
+        }
+    }
+
+    const resetForm = () => {
+        setFormData({handle: '', href: '', icon: '', label: ''});
+        setError('');
+        setErrors({});
+        setFormLoading(false);
+        setModalVisible("");
+    }
+
     return (
         <>
             <div className="sm:border-b sm:border-zinc-800 sm:h-[150px] lg:h-[100px]">
@@ -218,9 +305,23 @@ export default function CMSContact() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <Button size="large">
-                            Add Contact
-                        </Button>
+                        <Dropdown
+                            trigger={["click"]}
+                            menu={{
+                                items: socialData.map((s) => ({
+                                    key: s.label,
+                                    icon: s.icon,
+                                    label: s.label
+                                })),
+                                onClick: onDropdownClick
+                            }}
+                            placement="bottom"
+                            arrow={{ pointAtCenter: true }}
+                        >
+                            <Button size="large" icon={<FaPlus size={12} />}>
+                                Contact
+                            </Button>
+                        </Dropdown>
                     </div>
                 </div>
             </div>
@@ -258,6 +359,70 @@ export default function CMSContact() {
                     </div>
                 )}
             </div>
+
+            <Modal
+                title={modalTitle}
+                centered
+                open={modalVisible !== ""}
+                onOk={submitForm}
+                okText="Save"
+                confirmLoading={formLoading}
+                onCancel={resetForm}
+            >
+                <div className="flex flex-col space-y-4 mt-2.5">
+                    {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+
+                    <div>
+                        <label htmlFor="handle" className="block text-xs leading-8 text-zinc-400 group-hover:text-zinc-300 uppercase">
+                            Title
+                        </label>
+
+                        <input
+                            className={`bg-transparent mt-1 block w-full appearance-none rounded-md border text-sm px-3 py-2 placeholder-zinc-400 text-white shadow-sm focus:border-white focus:outline-none focus:ring-white sm:text-sm duration-150 ${!errors.email ? 'border-zinc-600 hover:border-zinc-400/50' : 'border-red-500'}`}
+                            id="handle"
+                            type="text"
+                            name="handle"
+                            placeholder="Title"
+                            value={formData.handle}
+                            onChange={(e) => {
+                                setError('');
+                                setErrors({
+                                    ...errors,
+                                    handle: '',
+                                });
+                                setFormData({...formData, handle: e.target.value});
+                            }}
+                        />
+
+                        {errors.handle !== '' && <p className="text-red-500 text-xs mt-1">{errors.handle}</p>}
+                    </div>
+
+                    <div>
+                        <label htmlFor="href" className="block text-xs leading-8 text-zinc-400 group-hover:text-zinc-300 uppercase">
+                            URL
+                        </label>
+
+                        <input
+                            className={`bg-transparent mt-1 block w-full appearance-none rounded-md border text-sm px-3 py-2 placeholder-zinc-400 text-white shadow-sm focus:border-white focus:outline-none focus:ring-white sm:text-sm duration-150 ${!errors.email ? 'border-zinc-600 hover:border-zinc-400/50' : 'border-red-500'}`}
+                            id="href"
+                            type="url"
+                            name="href"
+                            placeholder="https://example.com"
+                            value={formData.href}
+                            onChange={(e) => {
+                                setError('');
+                                setErrors({
+                                    ...errors,
+                                    href: '',
+                                });
+                                setFormData({...formData, href: e.target.value});
+                            }}
+                        />
+
+                        {errors.href !== '' && <p className="text-red-500 text-xs mt-1">{errors.href}</p>}
+                    </div>
+                </div>
+            </Modal>
         </>
     )
 }
