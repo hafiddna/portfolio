@@ -4,12 +4,12 @@ import Link from "next/link";
 import { Card } from "@/components/card";
 import { db } from "@/lib/firebase";
 import { Contact } from "@/models/contact";
-import { Button, Modal, Dropdown } from "antd";
+import { Button, Modal, Dropdown, notification, Popconfirm } from "antd";
 import type { MenuProps } from 'antd';
 import { collection, getDocs, query, where, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { BiLogoDevTo } from "react-icons/bi";
 import { FaMediumM } from "react-icons/fa";
-import { FaPlus, FaGithub, FaXTwitter, FaInstagram, FaLinkedin, FaFacebook, FaHashnode, FaStackOverflow, FaCodepen, FaHackerrank, FaYoutube, FaTwitch, FaThreads, FaSquareBehance, FaDribbble } from "react-icons/fa6";
+import { FaPlus, FaPen, FaRegTrashCan, FaArrowUpRightFromSquare, FaGithub, FaXTwitter, FaInstagram, FaLinkedin, FaFacebook, FaHashnode, FaStackOverflow, FaCodepen, FaHackerrank, FaYoutube, FaTwitch, FaThreads, FaSquareBehance, FaDribbble } from "react-icons/fa6";
 import { SiCodesandbox, SiLeetcode, SiCodewars, SiTopcoder } from "react-icons/si";
 import { z } from "zod";
 
@@ -156,6 +156,8 @@ export default function CMSContact() {
     const [error, setError] = useState<string>('');
     const [errors, setErrors] = useState<Record<string, string>>({});
 
+    const [api, contextHolder] = notification.useNotification();
+
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
@@ -214,8 +216,9 @@ export default function CMSContact() {
                 });
                 setSocialData(socials.filter((s) => !newSocials.find((n) => n.label === s.label)));
                 setData(newSocials);
-            } catch (error) {
-                console.error("Error fetching data: ", error);
+            } catch (error: unknown) {
+                console.log(error);
+                setError("Failed to fetch data.");
             } finally {
                 setTimeout(() => {
                     setLoading(false);
@@ -225,13 +228,21 @@ export default function CMSContact() {
         fetchData().then(() => {});
     }, []);
 
+    useEffect(() => {
+        if (error !== "") {
+            api['error']({
+                message: error
+            });
+        }
+    }, [error, api]);
+
     const onDropdownClick: MenuProps['onClick'] = ({ key }) => {
         const selected = socials.find((s) => s.label === key);
         if (selected) {
             setFormData({
                 handle: '',
                 href: '',
-                icon: '',
+                icon: selected.label.toLowerCase().replace(/ /g, '').replace(/[^a-zA-Z0-9]/g, ''),
                 label: selected.label,
             });
             setModalVisible("add");
@@ -244,27 +255,51 @@ export default function CMSContact() {
         }
     };
 
+    const successNotification = (title: string, description: string) => {
+        api['success']({
+            message: title,
+            description: description
+        });
+    };
+
     const submitForm = async () => {
         setFormLoading(true);
-        setFormData({
-            ...formData,
-            icon: formData.label
-        });
 
         try {
             schema.parse(formData);
 
             if (modalVisible === "add") {
                 const docRef = await addDoc(collection(db, "contacts"), formData);
-                setData([...data, {...formData, id: docRef.id}]);
+                setData([
+                    ...data,
+                    {
+                        ...formData,
+                        id: docRef.id,
+                        icon: socials.find((s) => s.label === formData.label)?.icon_title,
+                    }
+                ]);
+                successNotification("Contact added", "The contact has been added successfully.");
+                setSocialData(socialData.filter((s) => s.label !== formData.label));
             } else if (modalVisible === "edit") {
                 const contactRef = collection(db, "contacts");
                 const contactQuery = query(contactRef, where("label", "==", formData.label));
                 const contactSnapshot = await getDocs(contactQuery);
-                const contactDoc = contactSnapshot.docs[0];
-                await updateDoc(doc(db, "contacts", contactDoc.id), formData);
-                const updatedData = data.map((d) => d.id === contactDoc.id ? {...formData, id: contactDoc.id} : d);
+                const contactDoc: Contact[] = contactSnapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+                await updateDoc(doc(db, "contacts", contactDoc[0].id), formData);
+                const updatedData = data.map((d) => d.id === contactDoc[0].id ?
+                    {
+                        ...formData,
+                        id: contactDoc[0].id,
+                        icon: socials.find((s) => s.label === formData.label)?.icon_title,
+                    }
+                    :
+                    d
+                );
                 setData(updatedData);
+                successNotification("Contact updated", "The contact has been updated successfully.");
             }
 
             resetForm();
@@ -290,8 +325,26 @@ export default function CMSContact() {
         setModalVisible("");
     }
 
+    const deleteContact = async (id: string) => {
+        setFormLoading(true);
+
+        try {
+            await deleteDoc(doc(db, "contacts", id));
+            setData(data.filter((d) => d.id !== id));
+            setSocialData([...socialData, socials.find((s) => s.label === data.find((d) => d.id === id)?.label) as SocialOption]);
+            successNotification("Contact deleted", "The contact has been deleted successfully.");
+        } catch (error: unknown) {
+            console.log(error);
+            setError("Failed to delete contact.");
+        } finally {
+            setFormLoading(false);
+        }
+    }
+
     return (
         <>
+            {contextHolder}
+
             <div className="sm:border-b sm:border-zinc-800 sm:h-[150px] lg:h-[100px]">
                 <div
                     className="max-w-7xl mx-auto flex flex-col gap-4 lg:gap-10 px-6 lg:px-8 lg:flex-row lg:justify-between">
@@ -349,6 +402,49 @@ export default function CMSContact() {
                                             {s.label}
                                         </span>
                                     </div>
+
+                                    <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition duration-300">
+                                        <Button
+                                            size="small"
+                                        >
+                                            <Link href={s.href || ''} target="_blank" rel="noopener noreferrer">
+                                                <FaArrowUpRightFromSquare size={12}/>
+                                            </Link>
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            icon={<FaPen size={12}/>}
+                                            onClick={() => {
+                                                setFormData({
+                                                    handle: s.handle || '',
+                                                    href: s.href || '',
+                                                    icon: s.label && s.label.toLowerCase().replace(/ /g, '').replace(/[^a-zA-Z0-9]/g, '') || '',
+                                                    label: s.label || '',
+                                                });
+                                                setModalVisible("edit");
+                                                setModalTitle(
+                                                    <div className="flex items-center gap-2">
+                                                        {s.icon}
+                                                        <span>{s.label}</span>
+                                                    </div>
+                                                )
+                                            }}
+                                        />
+                                        <Popconfirm
+                                            title="Are you sure you want to delete this contact?"
+                                            onConfirm={() => {
+                                                deleteContact(s.id).then(() => {})
+                                            }}
+                                            okText="Yes"
+                                            cancelText="No"
+                                            okButtonProps={{ loading: formLoading }}
+                                        >
+                                            <Button
+                                                size="small"
+                                                icon={<FaRegTrashCan size={12}/>}
+                                            />
+                                        </Popconfirm>
+                                    </div>
                                 </div>
                             </Card>
                         ))}
@@ -370,8 +466,6 @@ export default function CMSContact() {
                 onCancel={resetForm}
             >
                 <div className="flex flex-col space-y-4 mt-2.5">
-                    {error && <p className="text-red-500 text-xs text-center">{error}</p>}
-
                     <div>
                         <label htmlFor="handle" className="block text-xs leading-8 text-zinc-400 group-hover:text-zinc-300 uppercase">
                             Title
