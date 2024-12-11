@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/card";
 import { db } from "@/lib/firebase";
 import { PageStatistic, Visitor } from "@/models/page-statistic";
-import { Select, DatePicker, Tabs, Tooltip as AntdTooltip, Statistic, Radio } from 'antd';
+import { Select, DatePicker, Tabs, Tooltip as AntdTooltip, Statistic, Radio, Progress } from 'antd';
 import type { SelectProps, StatisticProps } from 'antd';
 import dayjs from "dayjs";
 import { collection, getDocs, query } from "firebase/firestore";
@@ -28,6 +28,21 @@ interface ChartData {
 interface DatesFilter {
     start: number;
     end: number;
+}
+
+interface PagesView {
+    visitors: {name: string; count: number}[];
+    page_views: {name: string; count: number}[];
+}
+
+interface CountriesView {
+    visitors: {emoji: string; country: string; percentage: number}[];
+    page_views: {emoji: string; country: string; percentage: number}[];
+}
+
+interface OthersView {
+    visitors: {name: string; percentage: number}[];
+    page_views: {name: string; percentage: number}[];
 }
 
 const data: ChartData[] = [
@@ -107,12 +122,12 @@ export default function Dashboard() {
     const [pageView, setPageView] = useState({count: 0, percentage: 0});
     const [pageViewChart, setPageViewChart] = useState<ChartData[]>([]);
 
-    const [pagesView, setPagesView] = useState({visitors: [{name: "", count: 0}], page_views: [{name: "", count: 0}]});
-    const [countriesView, setCountriesView] = useState({visitors: [{emoji: "", country: "", percentage: 0}], page_views: [{emoji: "", country: "", percentage: 0}]});
+    const [pagesView, setPagesView] = useState<PagesView>();
+    const [countriesView, setCountriesView] = useState<CountriesView>();
     const [devicesTab, setDevicesTab] = useState<"devices" | "browsers">("devices");
-    const [devicesView, setDevicesView] = useState({visitors: [{name: "", percentage: 0}], page_views: [{name: "", percentage: 0}]});
-    const [browserView, setBrowserView] = useState({visitors: [{name: "", percentage: 0}], page_views: [{name: "", percentage: 0}]});
-    const [osView, setOsView] = useState({visitors: [{name: "", percentage: 0}], page_views: [{name: "", percentage: 0}]});
+    const [devicesView, setDevicesView] = useState<OthersView>();
+    const [browserView, setBrowserView] = useState<OthersView>();
+    const [osView, setOsView] = useState<OthersView>();
 
     useEffect(() => {
         const currentSearchParams = new URLSearchParams(searchParams.toString());
@@ -208,6 +223,13 @@ export default function Dashboard() {
 
             const newVisitorChart: ChartData[] = data;
             const newPageViewChart: ChartData[] = data;
+
+            const pagesVisitor: {name: string; count: number}[] = [];
+            const pagesPageView: {name: string; count: number}[] = [];
+            const countries: string[] = [];
+            const devices: string[] = [];
+            const browsers: string[] = [];
+            const os: string[] = [];
 
             if (periodTypeFilter == "period") {
                 if (periodFilter == "Last 24 Hours") {
@@ -314,11 +336,16 @@ export default function Dashboard() {
             }
 
             pageStatistics.map((page: PageStatistic) => {
+                pagesPageView.push({name: page.name || "", count: page.views || 0});
+
                 if (page.visitor) {
                     page.visitor.map((visitor: Visitor) => {
                         if (visitor.date.seconds >= datesBeetween.now.start && visitor.date.seconds <= datesBeetween.now.end) {
                             if (!nowIps.includes(visitor.ip)) {
                                 nowIps.push(visitor.ip);
+
+                                // TODO: This still wrong
+                                pagesVisitor.push({name: page.name || "", count: 1});
                             }
 
                             nowPageViewCount++;
@@ -337,6 +364,9 @@ export default function Dashboard() {
             setVisitorChart(newVisitorChart);
             setPageView({count: nowPageViewCount, percentage: Math.round(((nowPageViewCount - (lastQuartalPageViewCount == 0 ? 1 : lastQuartalPageViewCount)) / (lastQuartalPageViewCount == 0 ? 1 : lastQuartalPageViewCount)) * 100)});
             setPageViewChart(newPageViewChart);
+
+            console.log("pagesVisitor, pagesPageView", pagesVisitor, pagesPageView);
+            setPagesView({visitors: pagesVisitor, page_views: pagesPageView});
         }
 
         setLoading(false);
@@ -364,9 +394,7 @@ export default function Dashboard() {
                             <p className="text-sm text-[#A1A1A1] font-semibold">{name}</p>
                             {!firstLoading ? (
                                 <div className="flex items-center gap-4">
-                                    <p className="text-[32px] text-[#EDEDED] font-semibold">
-                                        <Statistic value={count} formatter={formatter} />
-                                    </p>
+                                    <Statistic value={count} formatter={formatter} className="text-[32px] text-[#EDEDED] font-semibold" />
                                     <AntdTooltip title={`100% more visitors than the previous 7 days`}>
                                         <div className={`min-w-[46px] p-1.5 rounded-[5px] flex justify-center items-center text-xs font-medium ${percentage > 0 ? "text-[#0CCE6B] bg-[#5ECB7533]" : percentage == 0 ? "text-[#666666] bg-[#333333]" : "text-[#FF0000] bg-[#FF595933]"}`}>
                                             <p>{percentage > 0 ? "+" : ""}{percentage}%</p>
@@ -580,7 +608,22 @@ export default function Dashboard() {
                                 <div className="font-medium text-sm text-[#EDEDED]">Pages</div>
                                 <div className="text-xs text-[#A1A1A1] uppercase">{typeFilter.replace("_", " ")}</div>
                             </div>
-                            <div className="flex flex-col my-2"></div>
+                            <div className="flex flex-col my-2">
+                                {pagesView && pagesView[typeFilter].map((page, index) => (
+                                    <div key={index} className="flex justify-between items-center py-2 border-b border-zinc-800">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 rounded-md bg-zinc-800 flex justify-center items-center">
+                                                <p className="text-xs text-zinc-100 font-semibold">{page.name[0]}</p>
+                                            </div>
+                                            <p className="text-sm text-[#EDEDED] font-medium">{page.name}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm text-[#EDEDED] font-medium">{page.count}</p>
+                                            <div className="px-1.5 py-0.5 rounded-md flex justify-center items-center bg-zinc-800/50 text-xs font-medium">+{page.count}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </Card>
                     </div>
 
